@@ -209,7 +209,7 @@ INTEGER FUNCTION load_csv(dbase, pd)
             CASE ('K_Si')          ; pd(ccol)%K_Si          = extract_double(values(ccol))
             CASE ('X_sicon')       ; pd(ccol)%X_sicon       = extract_double(values(ccol))
 
-            CASE DEFAULT ; print *, 'Unknown row "', TRIM(name), '"'
+            CASE DEFAULT ; ! BMT print *, 'Unknown row "', TRIM(name), '"'
          END SELECT
       ENDDO
    ENDDO
@@ -258,7 +258,7 @@ SUBROUTINE aed_macroalgae_load_params(data, dbase, count, list, settling, resusp
            read(tfil,nml=malgae_data,iostat=status)
            close(tfil)
        CASE DEFAULT
-           print *,'Unknown file type "',TRIM(dbase),'"'; status=1
+           ! BMT print *,'Unknown file type "',TRIM(dbase),'"'; status=1
     END SELECT
     IF (status /= 0) STOP 'Error reading namelist malgae_data'
 
@@ -550,7 +550,7 @@ SUBROUTINE aed_define_macroalgae(data, namlst)
 !-----------------------------------------------------------------------
 !BEGIN
 
-   print *,"        aed_macroalgae initialization"
+   ! BMT print *,"        aed_macroalgae initialization"
 
    dtlim = zerolimitfudgefactor
 

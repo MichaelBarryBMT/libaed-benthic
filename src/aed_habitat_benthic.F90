@@ -181,8 +181,8 @@ SUBROUTINE aed_define_habitat_benthic(data, namlst)
 !
 !-------------------------------------------------------------------------------
 !BEGIN
-   print *,"        aed_habitat_benthic initialization"
-   print *,"          WARNING! aed_habitat model is under development"
+   ! BMT print *,"        aed_habitat_benthic initialization"
+   ! BMT print *,"          WARNING! aed_habitat model is under development"
 
    ! Read the namelist
    read(namlst,nml=aed_habitat_benthic,iostat=status)
@@ -201,7 +201,7 @@ SUBROUTINE aed_define_habitat_benthic(data, namlst)
    data%simCharaHabitat  = simCharaHabitat  ; IF(simCharaHabitat) data%num_habitats=data%num_habitats+1
    data%simClearWater    = simClearWater    ; IF(simClearWater) data%num_habitats=data%num_habitats+1
 
-   print *,"          ... # habitat templates simulated: ",data%num_habitats
+   ! BMT print *,"          ... # habitat templates simulated: ",data%num_habitats
 
    IF( extra_diag )   diag_level = 10           ! legacy use of extra_debug
 

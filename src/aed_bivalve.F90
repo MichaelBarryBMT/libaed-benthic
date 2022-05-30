@@ -245,7 +245,7 @@ INTEGER FUNCTION load_csv(dbase,bivalve_param)
             CASE ('prey(3)%bivalve_prey') ; CALL copy_name(values(ccol), bivalve_param(ccol)%prey(3)%bivalve_prey)
             CASE ('prey(3)%Pbiv_prey')    ; bivalve_param(ccol)%prey(3)%Pbiv_prey = extract_double(values(ccol))
 
-            CASE DEFAULT ; print *, 'Unknown row "', TRIM(name), '"'
+            CASE DEFAULT ; ! BMT print *, 'Unknown row "', TRIM(name), '"'
          END SELECT
       ENDDO
    ENDDO
@@ -291,7 +291,7 @@ SUBROUTINE aed_bivalve_load_params(data, dbase, count, list, X_c)
            read(tfil,nml=bivalve_params,iostat=status)
            close(tfil)
        CASE DEFAULT
-           print *,'Unknown file type "',TRIM(dbase),'"'; status=1
+           ! BMT print *,'Unknown file type "',TRIM(dbase),'"'; status=1
     END SELECT
     IF (status /= 0) STOP 'Error reading namelist bivalves_params'
 
@@ -441,7 +441,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
                     initFromDensity, diag_level, X_c, bt_renewal
 !-----------------------------------------------------------------------
 !BEGIN
-   print *,"        aed_bivalve initialization"
+   ! BMT print *,"        aed_bivalve initialization"
 
    ! Read the namelist
    read(namlst,nml=aed_bivalve,iostat=status)
