@@ -182,7 +182,7 @@ INTEGER FUNCTION load_csv(dbase, md)
             CASE ('K_P')          ; md(ccol)%K_P          = extract_double(values(ccol))
             CASE ('X_pcon')       ; md(ccol)%X_pcon       = extract_double(values(ccol))
 
-            CASE DEFAULT ; print *, 'Unknown row "', TRIM(name), '"'
+            CASE DEFAULT ; ! BMT print *, 'Unknown row "', TRIM(name), '"'
          END SELECT
       ENDDO
    ENDDO
@@ -226,7 +226,8 @@ SUBROUTINE aed_macrophyte_load_params(data, dbase, count, list)
            read(tfil,nml=macrophyte_data,iostat=status)
            close(tfil)
        CASE DEFAULT
-           print *,'Unknown file type "',TRIM(dbase),'"'; status=1
+           ! BMT  print *,'Unknown file type "',TRIM(dbase),'"';
+            status=1
     END SELECT
     IF (status /= 0) STOP 'Error reading namelist macrophyte_data for macrophytes'
 
@@ -310,7 +311,7 @@ SUBROUTINE aed_define_macrophyte(data, namlst)
 
 !-----------------------------------------------------------------------
 !BEGIN
-   print *,"        aed_macrophyte initialization"
+   ! BMT print *,"        aed_macrophyte initialization"
 
 ! now done in the declaration
 !  simMacFeedback = .FALSE.

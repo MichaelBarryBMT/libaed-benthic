@@ -440,7 +440,7 @@ SUBROUTINE aed_define_macroalgae(data, namlst)
 !-----------------------------------------------------------------------
 !BEGIN
 
-   print *,"        aed_macroalgae initialization"
+   ! BMT print *,"        aed_macroalgae initialization"
 
    ! Default settings
    settling = _MOB_CONST_
