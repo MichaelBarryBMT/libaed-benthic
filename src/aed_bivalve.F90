@@ -291,7 +291,8 @@ SUBROUTINE aed_bivalve_load_params(data, dbase, count, list, X_c)
            read(tfil,nml=bivalve_params,iostat=status)
            close(tfil)
        CASE DEFAULT
-           ! BMT print *,'Unknown file type "',TRIM(dbase),'"'; status=1
+           ! BMT print *,'Unknown file type "',TRIM(dbase),'"';
+            status=1
     END SELECT
     IF (status /= 0) STOP 'Error reading namelist bivalves_params'
 
