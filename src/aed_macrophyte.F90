@@ -222,14 +222,14 @@ SUBROUTINE aed_macrophyte_load_params(data, dbase, count, list)
        CASE (NML_TYPE)
            tfil = find_free_lun()
            open(tfil,file=dbase, status='OLD', iostat=status)
-           IF (status /= 0) STOP 'Cannot open macrophyte_data namelist file for macrophytes'
+           IF (status /= 0) STOP ! BMT 'Cannot open macrophyte_data namelist file for macrophytes'
            read(tfil,nml=macrophyte_data,iostat=status)
            close(tfil)
        CASE DEFAULT
            ! BMT  print *,'Unknown file type "',TRIM(dbase),'"';
             status=1
     END SELECT
-    IF (status /= 0) STOP 'Error reading namelist macrophyte_data for macrophytes'
+    IF (status /= 0) STOP ! BMT 'Error reading namelist macrophyte_data for macrophytes'
 
     data%num_mphy = count
     ALLOCATE(data%mphydata(count))
@@ -319,7 +319,7 @@ SUBROUTINE aed_define_macrophyte(data, namlst)
 
    ! Read the namelist
    read(namlst,nml=aed_macrophyte,iostat=status)
-   IF (status /= 0) STOP 'Error reading namelist aed_macrophyte'
+   IF (status /= 0) STOP ! BMT 'Error reading namelist aed_macrophyte'
 
    data%simMacFeedback = simMacFeedback
    data%simStaticBiomass = simStaticBiomass

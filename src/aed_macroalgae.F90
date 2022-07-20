@@ -254,13 +254,13 @@ SUBROUTINE aed_macroalgae_load_params(data, dbase, count, list, settling, resusp
        CASE (NML_TYPE)
            tfil = find_free_lun()
            open(tfil,file=dbase, status='OLD', iostat=status)
-           IF (status /= 0) STOP 'Cannot open malgae_data namelist file: ' !,dbase
+           IF (status /= 0) STOP ! BMT 'Cannot open malgae_data namelist file: ' !,dbase
            read(tfil,nml=malgae_data,iostat=status)
            close(tfil)
        CASE DEFAULT
            ! BMT print *,'Unknown file type "',TRIM(dbase),'"'; status=1
     END SELECT
-    IF (status /= 0) STOP 'Error reading namelist malgae_data'
+    IF (status /= 0) STOP ! BMT 'Error reading namelist malgae_data'
 
     data%simCGM = 0
 
@@ -556,7 +556,7 @@ SUBROUTINE aed_define_macroalgae(data, namlst)
 
    ! Read the namelist, and set module parameters
    read(namlst,nml=aed_macroalgae,iostat=status)
-   IF (status /= 0) STOP 'Error reading namelist aed_macroalgae'
+   IF (status /= 0) STOP ! BMT 'Error reading namelist aed_macroalgae'
    IF( extra_debug )  extra_diag = .true.       ! legacy use of extra_debug
    IF( extra_diag )   diag_level = 10           ! legacy use of extra_debug
    data%min_rho = min_rho ; data%max_rho = max_rho

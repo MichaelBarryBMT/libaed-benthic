@@ -287,14 +287,14 @@ SUBROUTINE aed_bivalve_load_params(data, dbase, count, list, X_c)
        CASE (NML_TYPE)
            tfil = find_free_lun()
            open(tfil,file=dbase, status='OLD',iostat=status)
-           IF (status /= 0) STOP 'Error opening bivalves_params namelist file'
+           IF (status /= 0) STOP ! BMT 'Error opening bivalves_params namelist file'
            read(tfil,nml=bivalve_params,iostat=status)
            close(tfil)
        CASE DEFAULT
            ! BMT print *,'Unknown file type "',TRIM(dbase),'"';
             status=1
     END SELECT
-    IF (status /= 0) STOP 'Error reading namelist bivalves_params'
+    IF (status /= 0) STOP ! BMT 'Error reading namelist bivalves_params'
 
     data%num_biv = count
     allocate(data%bivalves(count))
@@ -446,7 +446,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
 
    ! Read the namelist
    read(namlst,nml=aed_bivalve,iostat=status)
-   IF (status /= 0) STOP 'ERROR reading namelist aed_bivalve'
+   IF (status /= 0) STOP ! BMT 'ERROR reading namelist aed_bivalve'
 
    IF( extra_diag )   diag_level = 10           ! legacy use of extra_debug
 
@@ -539,7 +539,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
      data%id_Cmorttarget = aed_locate_variable(pc_target_variable)
    ENDIF
 
-   IF (do_uptake_variable .EQ. '') STOP 'bivalve needs DO uptake variable'
+   IF (do_uptake_variable .EQ. '') STOP ! BMT 'bivalve needs DO uptake variable'
    data%id_DOupttarget = aed_locate_variable(do_uptake_variable)
 
    data%simSSlim = ss_uptake_variable .NE. ''

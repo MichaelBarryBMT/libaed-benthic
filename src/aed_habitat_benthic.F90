@@ -186,7 +186,7 @@ SUBROUTINE aed_define_habitat_benthic(data, namlst)
 
    ! Read the namelist
    read(namlst,nml=aed_habitat_benthic,iostat=status)
-   IF (status /= 0) STOP 'Error reading namelist aed_habitat'
+   IF (status /= 0) STOP ! BMT 'Error reading namelist aed_habitat'
 
    ! Update module level switches
    data%num_habitats = 0
@@ -258,7 +258,7 @@ SUBROUTINE aed_define_habitat_benthic(data, namlst)
 !    rhsi_falg_link = 'MAG_ulva_ben'
 !    rhsi_salg_link = 'MAG_ulva'
      IF (rhsi_falg_link .EQ. "") THEN
-         STOP 'need to set rhsi_falg_link and rhsi_salg_link'
+         STOP ! BMT 'need to set rhsi_falg_link and rhsi_salg_link'
      ENDIF
 
      data%id_l_salg  = aed_locate_variable(TRIM(rhsi_salg_link))
