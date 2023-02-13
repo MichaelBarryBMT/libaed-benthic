@@ -13,12 +13,12 @@
 !#                                                                             #
 !#  Copyright 2015 - 2022 -  The University of Western Australia               #
 !#                                                                             #
-!#   AED2 is free software: you can redistribute it and/or modify              #
+!#   AED is free software: you can redistribute it and/or modify               #
 !#   it under the terms of the GNU General Public License as published by      #
 !#   the Free Software Foundation, either version 3 of the License, or         #
 !#   (at your option) any later version.                                       #
 !#                                                                             #
-!#   AED2 is distributed in the hope that it will be useful,                   #
+!#   AED is distributed in the hope that it will be useful,                    #
 !#   but WITHOUT ANY WARRANTY; without even the implied warranty of            #
 !#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
 !#   GNU General Public License for more details.                              #
@@ -101,19 +101,19 @@ MODULE aed_bivalve
 
       ! The prey
       INTEGER  :: num_prey
-      TYPE(bivalve_prey_t) :: prey(MAX_ZOOP_PREY)
+      TYPE(bivalve_prey_t) :: prey(MAX_BVLV_PREY)
    END TYPE
 !  %% END NAMELIST   %% type : bivalve_params_t
 
    TYPE,extends(bivalve_params_t) :: bivalve_data_t
-      INTEGER  :: id_prey(MAX_ZOOP_PREY)
-      INTEGER  :: id_phyIN(MAX_ZOOP_PREY), id_phyIP(MAX_ZOOP_PREY)
+      INTEGER  :: id_prey(MAX_BVLV_PREY)
+      INTEGER  :: id_phyIN(MAX_BVLV_PREY), id_phyIP(MAX_BVLV_PREY)
    END TYPE
 
 
    TYPE,extends(aed_model_data_t) :: aed_bivalve_data_t
       !# Variable identifiers
-      INTEGER  :: id_biv(MAX_ZOOP_TYPES)
+      INTEGER  :: id_biv(MAX_BVLV_TYPES)
       INTEGER  :: id_Nexctarget,id_Nmorttarget
       INTEGER  :: id_Pexctarget,id_Pmorttarget
       INTEGER  :: id_Cexctarget,id_Cmorttarget
@@ -161,25 +161,27 @@ CONTAINS
 
 
 !###############################################################################
-INTEGER FUNCTION load_csv(dbase,bivalve_param)
+INTEGER FUNCTION load_csv(dbase, bivalve_param, dbsize)
 !-------------------------------------------------------------------------------
    USE aed_csv_reader
 !-------------------------------------------------------------------------------
 !ARGUMENTS
    CHARACTER(len=*),INTENT(in) :: dbase
-   TYPE(bivalve_params_t),INTENT(out) :: bivalve_param(MAX_ZOOP_TYPES)
+   TYPE(bivalve_params_t),INTENT(out) :: bivalve_param(MAX_BVLV_TYPES)
+   INTEGER,INTENT(out) :: dbsize
 !
 !LOCALS
-   INTEGER :: unit, nccols, ccol
+   INTEGER :: unit, nccols, ccol, dcol
    CHARACTER(len=32),POINTER,DIMENSION(:) :: csvnames
    CHARACTER(len=32) :: name
    TYPE(AED_SYMBOL),DIMENSION(:),ALLOCATABLE :: values
-   INTEGER :: idx_col = 0
+   INTEGER :: idx_col = 0, idx_pry
    LOGICAL :: meh
    INTEGER :: ret = 0
 !
 !BEGIN
 !-------------------------------------------------------------------------------
+   dbsize = 0
    unit = aed_csv_read_header(dbase, csvnames, nccols)
    IF (unit <= 0) THEN
       load_csv = -1
@@ -190,62 +192,68 @@ INTEGER FUNCTION load_csv(dbase,bivalve_param)
 
    DO WHILE ( aed_csv_read_row(unit, values) )
       DO ccol=2,nccols
-         bivalve_param(ccol)%name = csvnames(ccol)
+         dcol = ccol-1
+         bivalve_param(dcol)%name = csvnames(ccol)
 
          CALL copy_name(values(1), name)
          SELECT CASE (name)
-            CASE ('initial_conc')         ; bivalve_param(ccol)%initial_conc = extract_double(values(ccol))
-            CASE ('min')                  ; bivalve_param(ccol)%min          = extract_double(values(ccol))
-            CASE ('length')               ; bivalve_param(ccol)%length       = extract_integer(values(ccol))
-            CASE ('INC')                  ; bivalve_param(ccol)%INC          = extract_double(values(ccol))
-            CASE ('IPC')                  ; bivalve_param(ccol)%IPC          = extract_double(values(ccol))
-            CASE ('Rgrz')                 ; bivalve_param(ccol)%Rgrz         = extract_double(values(ccol))
-            CASE ('Ing')                  ; bivalve_param(ccol)%Ing          = extract_integer(values(ccol))
-            CASE ('WaI')                  ; bivalve_param(ccol)%WaI          = extract_double(values(ccol))
-            CASE ('WbI')                  ; bivalve_param(ccol)%WbI          = extract_double(values(ccol))
-            CASE ('fassim')               ; bivalve_param(ccol)%fassim       = extract_double(values(ccol))
-            CASE ('Cmin_grz')             ; bivalve_param(ccol)%Cmin_grz     = extract_double(values(ccol))
-            CASE ('Kgrz')                 ; bivalve_param(ccol)%Kgrz         = extract_double(values(ccol))
-            CASE ('minT')                 ; bivalve_param(ccol)%minT         = extract_double(values(ccol))
-            CASE ('Tmin')                 ; bivalve_param(ccol)%Tmin         = extract_double(values(ccol))
-            CASE ('Tmax')                 ; bivalve_param(ccol)%Tmax         = extract_double(values(ccol))
-            CASE ('maxT')                 ; bivalve_param(ccol)%maxT         = extract_double(values(ccol))
-            CASE ('Dmax')                 ; bivalve_param(ccol)%Dmax         = extract_double(values(ccol))
-            CASE ('maxD')                 ; bivalve_param(ccol)%maxD         = extract_double(values(ccol))
-            CASE ('SSmax')                ; bivalve_param(ccol)%SSmax        = extract_double(values(ccol))
-            CASE ('maxSS')                ; bivalve_param(ccol)%maxSS        = extract_double(values(ccol))
-            CASE ('Rexcr')                ; bivalve_param(ccol)%Rexcr        = extract_double(values(ccol))
-            CASE ('Regst')                ; bivalve_param(ccol)%Regst        = extract_double(values(ccol))
-            CASE ('gegst')                ; bivalve_param(ccol)%gegst        = extract_double(values(ccol))
-            CASE ('Rresp')                ; bivalve_param(ccol)%Rresp        = extract_double(values(ccol))
-            CASE ('saltfunc')             ; bivalve_param(ccol)%saltfunc     = extract_integer(values(ccol))
-            CASE ('minS')                 ; bivalve_param(ccol)%minS         = extract_double(values(ccol))
-            CASE ('Smin')                 ; bivalve_param(ccol)%Smin         = extract_double(values(ccol))
-            CASE ('Smax')                 ; bivalve_param(ccol)%Smax         = extract_double(values(ccol))
-            CASE ('maxS')                 ; bivalve_param(ccol)%maxS         = extract_double(values(ccol))
-            CASE ('fR20')                 ; bivalve_param(ccol)%fR20         = extract_integer(values(ccol))
-            CASE ('War')                  ; bivalve_param(ccol)%War          = extract_double(values(ccol))
-            CASE ('Wbr')                  ; bivalve_param(ccol)%Wbr          = extract_double(values(ccol))
-            CASE ('fR')                   ; bivalve_param(ccol)%fR           = extract_integer(values(ccol))
-            CASE ('theta_resp')           ; bivalve_param(ccol)%theta_resp   = extract_double(values(ccol))
-            CASE ('TmaxR')                ; bivalve_param(ccol)%TmaxR        = extract_double(values(ccol))
-            CASE ('maxTR')                ; bivalve_param(ccol)%maxTR        = extract_double(values(ccol))
-            CASE ('Qresp')                ; bivalve_param(ccol)%Qresp        = extract_double(values(ccol))
-            CASE ('SDA')                  ; bivalve_param(ccol)%SDA          = extract_double(values(ccol))
-            CASE ('Rmort')                ; bivalve_param(ccol)%Rmort        = extract_double(values(ccol))
-            CASE ('Rpred')                ; bivalve_param(ccol)%Rpred        = extract_double(values(ccol))
-            CASE ('fDO')                  ; bivalve_param(ccol)%fDO          = extract_integer(values(ccol))
-            CASE ('K_BDO')                ; bivalve_param(ccol)%K_BDO        = extract_double(values(ccol))
-            CASE ('KDO')                  ; bivalve_param(ccol)%KDO          = extract_double(values(ccol))
-            CASE ('num_prey')             ; bivalve_param(ccol)%num_prey     = extract_integer(values(ccol))
-            CASE ('prey(1)%bivalve_prey') ; CALL copy_name(values(ccol), bivalve_param(ccol)%prey(1)%bivalve_prey)
-            CASE ('prey(1)%Pbiv_prey')    ; bivalve_param(ccol)%prey(1)%Pbiv_prey = extract_double(values(ccol))
-            CASE ('prey(2)%bivalve_prey') ; CALL copy_name(values(ccol), bivalve_param(ccol)%prey(3)%bivalve_prey)
-            CASE ('prey(2)%Pbiv_prey')    ; bivalve_param(ccol)%prey(2)%Pbiv_prey = extract_double(values(ccol))
-            CASE ('prey(3)%bivalve_prey') ; CALL copy_name(values(ccol), bivalve_param(ccol)%prey(3)%bivalve_prey)
-            CASE ('prey(3)%Pbiv_prey')    ; bivalve_param(ccol)%prey(3)%Pbiv_prey = extract_double(values(ccol))
+            CASE ('initial_conc')         ; bivalve_param(dcol)%initial_conc = extract_double(values(ccol))
+            CASE ('min')                  ; bivalve_param(dcol)%min          = extract_double(values(ccol))
+            CASE ('length')               ; bivalve_param(dcol)%length       = extract_integer(values(ccol))
+            CASE ('INC')                  ; bivalve_param(dcol)%INC          = extract_double(values(ccol))
+            CASE ('IPC')                  ; bivalve_param(dcol)%IPC          = extract_double(values(ccol))
+            CASE ('Rgrz')                 ; bivalve_param(dcol)%Rgrz         = extract_double(values(ccol))
+            CASE ('Ing')                  ; bivalve_param(dcol)%Ing          = extract_double(values(ccol))
+            CASE ('WaI')                  ; bivalve_param(dcol)%WaI          = extract_double(values(ccol))
+            CASE ('WbI')                  ; bivalve_param(dcol)%WbI          = extract_double(values(ccol))
+            CASE ('fassim')               ; bivalve_param(dcol)%fassim       = extract_double(values(ccol))
+            CASE ('Cmin_grz')             ; bivalve_param(dcol)%Cmin_grz     = extract_double(values(ccol))
+            CASE ('Kgrz')                 ; bivalve_param(dcol)%Kgrz         = extract_double(values(ccol))
+            CASE ('minT')                 ; bivalve_param(dcol)%minT         = extract_double(values(ccol))
+            CASE ('Tmin')                 ; bivalve_param(dcol)%Tmin         = extract_double(values(ccol))
+            CASE ('Tmax')                 ; bivalve_param(dcol)%Tmax         = extract_double(values(ccol))
+            CASE ('maxT')                 ; bivalve_param(dcol)%maxT         = extract_double(values(ccol))
+            CASE ('Dmax')                 ; bivalve_param(dcol)%Dmax         = extract_double(values(ccol))
+            CASE ('maxD')                 ; bivalve_param(dcol)%maxD         = extract_double(values(ccol))
+            CASE ('SSmax')                ; bivalve_param(dcol)%SSmax        = extract_double(values(ccol))
+            CASE ('maxSS')                ; bivalve_param(dcol)%maxSS        = extract_double(values(ccol))
+            CASE ('Rexcr')                ; bivalve_param(dcol)%Rexcr        = extract_double(values(ccol))
+            CASE ('Regst')                ; bivalve_param(dcol)%Regst        = extract_double(values(ccol))
+            CASE ('gegst')                ; bivalve_param(dcol)%gegst        = extract_double(values(ccol))
+            CASE ('Rresp')                ; bivalve_param(dcol)%Rresp        = extract_double(values(ccol))
+            CASE ('saltfunc')             ; bivalve_param(dcol)%saltfunc     = extract_integer(values(ccol))
+            CASE ('minS')                 ; bivalve_param(dcol)%minS         = extract_double(values(ccol))
+            CASE ('Smin')                 ; bivalve_param(dcol)%Smin         = extract_double(values(ccol))
+            CASE ('Smax')                 ; bivalve_param(dcol)%Smax         = extract_double(values(ccol))
+            CASE ('maxS')                 ; bivalve_param(dcol)%maxS         = extract_double(values(ccol))
+            CASE ('fR20')                 ; bivalve_param(dcol)%fR20         = extract_double(values(ccol))
+            CASE ('War')                  ; bivalve_param(dcol)%War          = extract_double(values(ccol))
+            CASE ('Wbr')                  ; bivalve_param(dcol)%Wbr          = extract_double(values(ccol))
+            CASE ('fR')                   ; bivalve_param(dcol)%fR           = extract_double(values(ccol))
+            CASE ('theta_resp')           ; bivalve_param(dcol)%theta_resp   = extract_double(values(ccol))
+            CASE ('TmaxR')                ; bivalve_param(dcol)%TmaxR        = extract_double(values(ccol))
+            CASE ('maxTR')                ; bivalve_param(dcol)%maxTR        = extract_double(values(ccol))
+            CASE ('Qresp')                ; bivalve_param(dcol)%Qresp        = extract_double(values(ccol))
+            CASE ('SDA')                  ; bivalve_param(dcol)%SDA          = extract_double(values(ccol))
+            CASE ('Rmort')                ; bivalve_param(dcol)%Rmort        = extract_double(values(ccol))
+            CASE ('Rpred')                ; bivalve_param(dcol)%Rpred        = extract_double(values(ccol))
+            CASE ('fDO')                  ; bivalve_param(dcol)%fDO          = extract_double(values(ccol))
+            CASE ('K_BDO')                ; bivalve_param(dcol)%K_BDO        = extract_double(values(ccol))
+            CASE ('KDO')                  ; bivalve_param(dcol)%KDO          = extract_double(values(ccol))
+            CASE ('num_prey')             ; bivalve_param(dcol)%num_prey     = extract_integer(values(ccol))
 
-            CASE DEFAULT ; ! BMT print *, 'Unknown row "', TRIM(name), '"'
+            CASE DEFAULT
+                 idx_pry = indexed_field('prey(', ')%bivalve_prey', MAX_BVLV_PREY, name)
+                 IF ( idx_pry > 0 ) THEN
+                       CALL copy_name(values(ccol), bivalve_param(dcol)%prey(idx_pry)%bivalve_prey)
+                 ELSE
+                    idx_pry = indexed_field('prey(', ')%Pbiv_prey', MAX_BVLV_PREY, name)
+                    IF ( idx_pry > 0 ) THEN
+                       bivalve_param(dcol)%prey(idx_pry)%Pbiv_prey = extract_double(values(ccol))
+                    ELSE
+                       print *, 'Unknown row "', TRIM(name), '"'
+                    ENDIF
+                 ENDIF
          END SELECT
       ENDDO
    ENDDO
@@ -256,6 +264,7 @@ INTEGER FUNCTION load_csv(dbase,bivalve_param)
    IF (ASSOCIATED(csvnames)) DEALLOCATE(csvnames)
    IF (ALLOCATED(values))    DEALLOCATE(values)
 
+   dbsize = nccols-1
    load_csv = ret
 END FUNCTION load_csv
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -274,31 +283,42 @@ SUBROUTINE aed_bivalve_load_params(data, dbase, count, list, X_c)
 !LOCALS
    INTEGER  :: status
 
-   INTEGER  :: i,j,tfil,sort_i(MAX_ZOOP_PREY)
-   AED_REAL :: Pbiv_prey(MAX_ZOOP_PREY)
+   INTEGER  :: i, j, dbsize, tfil,sort_i(MAX_BVLV_PREY)
+   AED_REAL :: Pbiv_prey(MAX_BVLV_PREY)
 
-   TYPE(bivalve_params_t)  :: bivalve_param(MAX_ZOOP_TYPES)
+   TYPE(bivalve_params_t),ALLOCATABLE :: bivalve_param(:)
    NAMELIST /bivalve_params/ bivalve_param   ! %% bivalve_params_t - see above
 !-------------------------------------------------------------------------------
 !BEGIN
+    dbsize = MAX_BVLV_TYPES !# nml cant give us a dbsize (maybe need to check name?)
+    ALLOCATE(bivalve_param(MAX_BVLV_TYPES))
     SELECT CASE (param_file_type(dbase))
        CASE (CSV_TYPE)
-           status = load_csv(dbase, bivalve_param)
+           status = load_csv(dbase, bivalve_param, dbsize)
        CASE (NML_TYPE)
+           ! BMT print*,"nml format parameter file is deprecated. Please update to CSV format"
+           bivalve_param%name = ''
            tfil = find_free_lun()
            open(tfil,file=dbase, status='OLD',iostat=status)
-           IF (status /= 0) STOP ! BMT 'Error opening bivalves_params namelist file'
+           IF (status /= 0) STOP 'Error opening bivalves_params namelist file'
            read(tfil,nml=bivalve_params,iostat=status)
            close(tfil)
+           dbsize = 0
+           DO i=1,MAX_BVLV_TYPES
+              IF (bivalve_param(i)%name == '') EXIT
+
+              dbsize = dbsize + 1
+           ENDDO
        CASE DEFAULT
-           ! BMT print *,'Unknown file type "',TRIM(dbase),'"';
-            status=1
+           print *,'Unknown file type "',TRIM(dbase),'"'; status=1
     END SELECT
     IF (status /= 0) STOP ! BMT 'Error reading namelist bivalves_params'
 
-    data%num_biv = count
+    data%num_biv = 0
     allocate(data%bivalves(count))
     DO i=1,count
+       IF ( list(i) < 1 .OR. list(i) > dbsize ) EXIT  !# bad index, exit the loop
+       data%num_biv = data%num_biv + 1
        ! General
        data%bivalves(i)%name          = bivalve_param(list(i))%name
        data%bivalves(i)%initial_conc  = bivalve_param(list(i))%initial_conc
@@ -374,6 +394,7 @@ SUBROUTINE aed_bivalve_load_params(data, dbase, count, list, X_c)
                               minimum=bivalve_param(list(i))%min)
     ENDDO
 !
+    DEALLOCATE(bivalve_param)
 END SUBROUTINE aed_bivalve_load_params
 !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -384,7 +405,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
 ! Initialise the bivalve biogeochemical model
 !
 !  Here, the aed_bivalve namelist is read and te variables exported
-!  by the model are registered with AED2.
+!  by the model are registered with AED.
 !-------------------------------------------------------------------------------
 !ARGUMENTS
    CLASS (aed_bivalve_data_t),INTENT(inout) :: data
@@ -397,7 +418,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
 !  %% NAMELIST   %%  /aed_bivalve/
 !  %% Last Checked 20/08/2021
    INTEGER  :: num_biv = 0
-   INTEGER  :: the_biv(MAX_ZOOP_TYPES) = 0
+   INTEGER  :: the_biv(MAX_BVLV_TYPES) = 0
    INTEGER  :: n_zones = 0
    INTEGER  :: active_zones(MAX_ZONES)
    LOGICAL  :: initFromDensity = .false.  !ability to read in map of mussel #'s
@@ -405,7 +426,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
    LOGICAL  :: simBivFeedback = .false.   !allow module to change prey/nutrient concs
    LOGICAL  :: simStaticBiomass = .false. !keep biomass fixed over time
    LOGICAL  :: simFixedEnv = .false.      !special case to overwrite env and food factors with constants
-   AED_REAL :: X_c(MAX_ZOOP_TYPES) = 1.   !mmolC/organism
+   AED_REAL :: X_c(MAX_BVLV_TYPES) = 1.   !mmolC/organism
    AED_REAL :: bt_renewal = zero_         !biv-tracer "renewal" timescale (days)
    AED_REAL :: fixed_temp
    AED_REAL :: fixed_sal
@@ -420,7 +441,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
    CHARACTER(len=64)  :: pc_target_variable = '' !particulate carbon target variable
    CHARACTER(len=64)  :: do_uptake_variable = '' !oxy uptake variable
    CHARACTER(len=64)  :: ss_uptake_variable = '' !sus. solids uptake variable
-   CHARACTER(len=128) :: dbase = 'aed_bivalve_pars.nml'
+   CHARACTER(len=128) :: dbase = 'aed_bivalve_pars.csv'
 
 ! %% From Module Globals
 !  LOGICAL  :: extra_diag = .false.      !## Obsolete Use diag_level = 10
@@ -494,7 +515,7 @@ SUBROUTINE aed_define_bivalve(data, namlst)
 
 
    !Register link to prey state variables
-   DO biv_i = 1,num_biv
+   DO biv_i = 1,data%num_biv
       phy_i = 0
       DO prey_i = 1,data%bivalves(biv_i)%num_prey
           data%bivalves(biv_i)%id_prey(prey_i) = aed_locate_variable( &
@@ -642,8 +663,8 @@ SUBROUTINE aed_calculate_benthic_bivalve(data,column,layer_idx)
 !
 !LOCALS
    AED_REAL :: biv, temp, salinity, oxy, ss ,matz !State variables
-   AED_REAL :: prey(MAX_ZOOP_PREY), grazing_prey(MAX_ZOOP_PREY) !Prey state variables
-   AED_REAL :: phy_INcon(MAX_ZOOP_PREY), phy_IPcon(MAX_ZOOP_PREY) !Internal nutrients for phytos
+   AED_REAL :: prey(MAX_BVLV_PREY), grazing_prey(MAX_BVLV_PREY) !Prey state variables
+   AED_REAL :: phy_INcon(MAX_BVLV_PREY), phy_IPcon(MAX_BVLV_PREY) !Internal nutrients for phytos
    AED_REAL :: dn_excr, dp_excr, dc_excr !Excretion state variables
    AED_REAL :: pon, pop, poc !Mortaility and fecal pellet state variables
    AED_REAL :: FGrazing_Limitation, f_Temp, f_Salinity, f_SS, I_max
@@ -664,7 +685,7 @@ SUBROUTINE aed_calculate_benthic_bivalve(data,column,layer_idx)
    matz = _STATE_VAR_S_(data%id_sed_zone)
 
    IF ( .NOT. in_zone_set(matz, data%active_zones) ) RETURN
-   IF ( .NOT. data%initFromDensity ) THEN
+   IF ( data%initFromDensity ) THEN
       IF ( _DIAG_VAR_S_(data%id_bnum) <1e-3 ) RETURN
    ENDIF
 
