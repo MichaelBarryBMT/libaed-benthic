@@ -494,7 +494,7 @@ SUBROUTINE aed_calculate_benthic_macrophyte(data,column,layer_idx)
         ! Set bottom fluxes for the pelagic (change per surface area per second)
         _FLUX_VAR_B_(data%id_mphy(mphy_i)) = _FLUX_VAR_B_(data%id_mphy(mphy_i)) + mphy_flux
       ENDIF
-      IF( data%simMacFeedback ) THEN
+      IF( data%simMacFeedback ) THEN 
     !    _FLUX_VAR_(data%id_oxy) = _FLUX_VAR_(data%id_oxy) + mphy_flux
     !    _FLUX_VAR_(data%id_dic) = _FLUX_VAR_(data%id_dic) - mphy_flux
       ENDIF
